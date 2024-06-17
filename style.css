@@ -1,0 +1,13 @@
+#mapid {
+    width: 100%;
+    height: 795px;
+}
+.leaflet-control-custom {
+    background-color: white;
+    padding: 10px;
+}
+.leaflet-control-custom button {
+    display: block;
+    width: 100%;
+    margin-bottom: 5px;
+}
