@@ -95,6 +95,7 @@ function create_polygon(height, width) {
 }
 
 function get_coord_poly(center, height, width) {
+    console.log(center);
     center = coord_to_pix(center)
     let point1 = [center[0] - width/2, center[1] - height/2]
     let point2 = [center[0] + width/2, center[1] - height/2]
@@ -125,9 +126,6 @@ function coord_to_pix(coord) {
 function pix_to_coord(pix) {
     let lon = pix[0]/Req
     let lat = 2 * Math.atan(Math.exp(pix[1]/Req)) - Math.PI/2
-    console.log(pix)
-    console.log(lon)
-    console.log(lat)
     return [radToDeg(lat), radToDeg(lon)]
 }
 
@@ -138,7 +136,24 @@ function remove_polygon(poly) {
 }
 
 function sendPoly() {
-
+    let tl = {lat: poly.getBounds().getNorthWest()["lat"],
+                        lon: poly.getBounds().getNorthWest()["lng"]};
+    let dr = {lat: poly.getBounds().getSouthEast()["lat"],
+        lon: poly.getBounds().getSouthEast()["lng"]};
+    const data = { tl: tl,
+                                  dr: dr};
+    fetch('http://127.0.0.1:5000/send', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(data => console.log('Success:', data))
+    .catch((error) => {
+        console.error('Error:', error);
+    });
 }
 
 L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png').addTo(mymap);
