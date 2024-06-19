@@ -3,6 +3,7 @@ import 'https://unpkg.com/leaflet-contextmenu@1.4.0/dist/leaflet.contextmenu.js'
 import 'https://unpkg.com/leaflet-path-drag@1.9.5/dist/index.js';
 
 import {centerMap, zoomIn, zoomOut} from './context_menu.js'
+import {coord_to_pix, pix_to_coord} from './utils.js'
 
 var mymap = L.map('mapid', {
     contextmenu: true,
@@ -72,8 +73,11 @@ var sendPolygonControl = L.Control.extend({
 
         // Кнопка с вашей логикой
         var SendButton = L.DomUtil.create('button', '', container);
+        SendButton.setAttribute("id", "send_button")
         SendButton.innerHTML = 'Отправить';
         L.DomEvent.on(SendButton, 'click', function() {
+            SendButton.innerHTML = 'Ожидайте';
+            SendButton.disabled = true;
             sendPoly();
         });
 
@@ -105,30 +109,6 @@ function get_coord_poly(center, height, width) {
     return [pix_to_coord(point1), pix_to_coord(point2), pix_to_coord(point3), pix_to_coord(point4)]
 }
 
-var Req = 6378160
-
-function degToRad(degrees) {
-    return degrees * (Math.PI / 180);
-}
-
-function radToDeg(rad) {
-    return rad / (Math.PI / 180);
-}
-
-function coord_to_pix(coord) {
-    let lon = degToRad(coord["lng"])
-    let lat = degToRad(coord["lat"])
-    let x = Req * lon
-    let y = Req * Math.log(Math.tan(Math.PI/4 + lat/2))
-    return [x,y]
-}
-
-function pix_to_coord(pix) {
-    let lon = pix[0]/Req
-    let lat = 2 * Math.atan(Math.exp(pix[1]/Req)) - Math.PI/2
-    return [radToDeg(lat), radToDeg(lon)]
-}
-
 function remove_polygon(poly) {
     if (poly != null) {
         poly.remove();
@@ -140,9 +120,15 @@ function sendPoly() {
                         lon: poly.getBounds().getNorthWest()["lng"]};
     let dr = {lat: poly.getBounds().getSouthEast()["lat"],
         lon: poly.getBounds().getSouthEast()["lng"]};
+
+    const urlParams = new URLSearchParams(window.location.search);
+    let hash_id = urlParams.get('hash');
+
     const data = { tl: tl,
-                                  dr: dr};
-    fetch('http://127.0.0.1:5000/send', {
+                        dr: dr,
+                        hash_id: hash_id};
+
+    fetch('http://127.0.0.1:8000/send', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
@@ -150,10 +136,20 @@ function sendPoly() {
         body: JSON.stringify(data)
     })
     .then(response => response.json())
-    .then(data => console.log('Success:', data))
+    .then(data => check_send_poly_response(data))
     .catch((error) => {
         console.error('Error:', error);
     });
+}
+
+function check_send_poly_response(data) {
+    console.log(data)
+    if (data["status"] === "outdated_page") {
+        alert("Оййййй, кажется страничка устарела, cry about it")
+    }
+    let SendButton = document.getElementById("send_button")
+    SendButton.innerHTML = 'Отправить';
+    SendButton.disabled = false;
 }
 
 L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png').addTo(mymap);
