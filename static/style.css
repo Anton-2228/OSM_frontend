@@ -1,6 +1,8 @@
-#mapid {
+html, body, #mapid {
     width: 100%;
-    height: 795px;
+    height: 100%;
+    margin: 0;
+    padding: 0;
 }
 .leaflet-control-custom {
     background-color: white;
