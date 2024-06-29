@@ -82,8 +82,6 @@ var mymap = L.map('mapid', {
     }]
 }).setView([55.7522, 37.6156], 13);
 
-mymap.dragging.disable();
-
 var poly;
 
 var width = 1;
