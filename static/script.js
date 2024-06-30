@@ -9,6 +9,7 @@ import 'https://unpkg.com/leaflet-contextmenu@1.4.0/dist/leaflet.contextmenu.js'
 
 import {centerMap, zoomIn, zoomOut} from './context_menu.js'
 import * as utils from './utils.js'
+import * as init from './init.js'
 
 (function() {
     L.Map.mergeOptions({
@@ -82,17 +83,29 @@ var mymap = L.map('mapid', {
     }]
 }).setView([55.7522, 37.6156], 13);
 
+init.addControlPlaceholders(mymap);
+
 var poly;
 
 var width = 1;
 var height = Math.sqrt(2);
 
+const screenWidth = window.screen.width
+const screenHeight = window.screen.height
+
+console.log(screenWidth);
+
+var position = 'topleft';
+if (screenWidth <= 700) {
+    position = 'tophorizontalmiddle';
+}
+
 var TeleportPolygonControl = L.Control.extend({
     options: {
-        position: 'topleft'
+        position: position
     },
     onAdd: function(map) {
-        var container = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-custom');
+        var container = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-custom top_controller');
 
         var teleportButton = L.DomUtil.create('button', '', container);
         teleportButton.innerHTML = "Переместить область к вам";
@@ -109,12 +122,16 @@ var TeleportPolygonControl = L.Control.extend({
 
 var SizePolygonControl = L.Control.extend({
     options: {
-        position: 'topleft'
+        position: position
     },
     onAdd: function(map) {
         var container = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-custom');
 
+        // var label = L.DomUtil.create('label', '', container);
+        // label.for = 'poly_size';
+        // label.innerHTML = 'Размер';
         var slider = L.DomUtil.create('input', '', container);
+        slider.id = 'poly_size';
         slider.type = 'range';
         slider.min = '1000';
         slider.max = '80000';
@@ -137,10 +154,10 @@ var SizePolygonControl = L.Control.extend({
 
 var sendPolygonControl = L.Control.extend({
     options: {
-        position: 'topleft'
+        position: position
     },
     onAdd: function(map) {
-        var container = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-custom-separate');
+        var container = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-custom');
 
         // Кнопка с вашей логикой
         var SendButton = L.DomUtil.create('button', '', container);

@@ -4,21 +4,32 @@ html, body, #mapid {
     margin: 0;
     padding: 0;
 }
+
 .leaflet-control-custom {
     background-color: white;
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center;
     padding: 10px;
 }
 .leaflet-control-custom button {
     display: block;
     width: 100%;
-    margin-bottom: 5px;
+    /*margin-bottom: 5px;*/
 }
-.leaflet-control-custom-separate {
-    background-color: white;
-    padding: 10px;
-    margin-top: 10px;
+
+.leaflet-horizontalmiddle {
+    position: absolute;
+    z-index: 1000;
+    pointer-events: none;
+    right: 50%;
+    transform: translateX(50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
-.leaflet-control-custom-separate button {
-    display: block;
-    width: 100%;
+
+.leaflet-horizontalmiddle .leaflet-control {
+    margin-bottom: 3px;
+    margin-top: 3px !important;
 }
