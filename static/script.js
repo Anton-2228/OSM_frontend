@@ -131,13 +131,13 @@ var SizePolygonControl = L.Control.extend({
         // var label = L.DomUtil.create('label', '', container);
         // label.for = 'poly_size';
         // label.innerHTML = 'Размер';
-        var slider = L.DomUtil.create('input', '', container);
+        var slider = L.DomUtil.create('input', 'slider', container);
         slider.id = 'poly_size';
         slider.type = 'range';
         slider.min = '1000';
         slider.max = '80000';
         slider.value = '10000';
-        slider.step = '1';
+        slider.step = '0.1';
 
         poly = create_polygon(mymap.getCenter(), height * slider.value, width * slider.value);
 
@@ -199,6 +199,7 @@ L.TrueSizeRectangle = L.Rectangle.extend({
         this._startLatLngs = null;
         this._startPoint = null;
         this._map = null;
+        this._isDragging = false;
 
         // Создаем ссылки на обработчики для правильного удаления событий
         this._onMouseMoveHandler = this._onMouseMove.bind(this);
@@ -220,10 +221,15 @@ L.TrueSizeRectangle = L.Rectangle.extend({
     },
 
     _onMouseDown: function(e) {
+        if (e.touches && e.touches.length > 1) {
+            return; // Если больше одного касания, не начинаем перетаскивание
+        }
+
         e.preventDefault();
         this._map.dragging.disable();
         this._startLatLngs = this.getLatLngs();
         this._startPoint = this._map.mouseEventToLatLng(e.touches ? e.touches[0] : e);
+        this._isDragging = true;
 
         document.addEventListener('mousemove', this._onMouseMoveHandler);
         document.addEventListener('mouseup', this._onMouseUpHandler);
@@ -232,6 +238,8 @@ L.TrueSizeRectangle = L.Rectangle.extend({
     },
 
     _onMouseMove: function(e) {
+        if (!this._isDragging || (e.touches && e.touches.length > 1)) return;
+
         e.preventDefault();
         var currentPoint = this._map.mouseEventToLatLng(e.touches ? e.touches[0] : e);
         var deltaLat = currentPoint.lat - this._startPoint.lat;
@@ -255,8 +263,11 @@ L.TrueSizeRectangle = L.Rectangle.extend({
     },
 
     _onMouseUp: function(e) {
+        if (!this._isDragging) return;
+
         e.preventDefault();
         this._map.dragging.enable();
+        this._isDragging = false;
         document.removeEventListener('mousemove', this._onMouseMoveHandler);
         document.removeEventListener('mouseup', this._onMouseUpHandler);
         document.removeEventListener('touchmove', this._onMouseMoveHandler);

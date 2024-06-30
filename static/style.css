@@ -33,3 +33,7 @@ html, body, #mapid {
     margin-bottom: 3px;
     margin-top: 3px !important;
 }
+
+.slider {
+    width: 300px;
+}
