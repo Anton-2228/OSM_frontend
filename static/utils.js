@@ -22,79 +22,164 @@ export function pix_to_coord(pix) {
     return [radToDeg(lat), radToDeg(lon)]
 }
 
-function isPointInRectangle(latlng, rectangle) {
-    let bounds = rectangle.getBounds();
-    return bounds.contains(latlng);
-}
+// function isPointInRectangle(latlng, rectangle) {
+//     let bounds = rectangle.getBounds();
+//     return bounds.contains(latlng);
+// }
 
-export function set_on_events(poly, mymap) {
-    var isDragging = false;
-    var startLatLng = 0;
-    mymap.on('touchstart', function(e) {
-        let latlng = e.latlng;
-        if (isPointInRectangle(latlng, poly)) {
-            isDragging = true;
-            startLatLng = latlng;
-            mymap.dragging.disable();
-        }
-    });
+// var isDragging = false;
+// var startLatLng = null;
 
-    mymap.on('touchmove', function(e) {
-        if (isDragging) {
-            // var latlng = e.touches ? map.mouseEventToLatLng(e.touches[0]) : e.latlng;
-            let latlng = e.latlng;
-            let offset = L.latLng(
-                latlng.lat - startLatLng.lat,
-                latlng.lng - startLatLng.lng
-            );
-            let b = poly.getBounds();
+// export function drop_drag() {
+//     isDragging = false;
+//     startLatLng = null;
+// }
 
-            let newBounds = [
-                [b.getSouthWest()["lat"] + offset.lat, b.getSouthWest()["lng"] + offset.lng],
-                [b.getNorthEast()["lat"] + offset.lat, b.getNorthEast()["lng"] + offset.lng]
-            ];
+// export function set_on_events(poly, mymap) {
+//     mymap.on('touchstart', function(e) {
+//         // console.log(1);
+//         // console.log(mymap.dragging.valueOf()["_enabled"]);
+//         let latlng = e.latlng;
+//         // console.log(poly.getBounds());
+//         // console.log(latlng);
+//         // if (isDragging) {
+//         //     isDragging = false;
+//         //     mymap.dragging.enable();
+//         //     return;
+//         // }
+//         if (isPointInRectangle(latlng, poly)) {
+//             // console.log("ПИЗДЦ");
+//             isDragging = true;
+//             startLatLng = latlng;
+//             mymap.dragging.disable();
+//         } else {
+//             mymap.dragging.enable();
+//             isDragging = false;
+//         }
+//     });
+//
+//     mymap.on('touchmove', function(e) {
+//         if (isDragging) {
+//             // var latlng = e.touches ? map.mouseEventToLatLng(e.touches[0]) : e.latlng;
+//             let latlng = e.latlng;
+//             let offset = L.latLng(
+//                 latlng.lat - startLatLng.lat,
+//                 latlng.lng - startLatLng.lng
+//             );
+//             let b = poly.getBounds();
+//
+//             let newBounds = [
+//                 [b.getSouthWest()["lat"] + offset.lat, b.getSouthWest()["lng"] + offset.lng],
+//                 [b.getNorthEast()["lat"] + offset.lat, b.getNorthEast()["lng"] + offset.lng]
+//             ];
+//
+//             poly.setBounds(newBounds);
+//             startLatLng = latlng;
+//         }
+//     });
+//
+//     mymap.on('touchend', function() {
+//         // if (isDragging) {
+//         //     isDragging = false;
+//         //     mymap.dragging.enable();
+//         // }
+//         // console.log(3);
+//         // console.log(mymap.dragging.valueOf()["_enabled"]);
+//         isDragging = false;
+//         mymap.dragging.enable();
+//     });
 
-            poly.setBounds(newBounds);
-            startLatLng = latlng;
-        }
-    });
 
-    mymap.on('touchend', function() {
-        if (isDragging) {
-            isDragging = false;
-            mymap.dragging.enable();
-        }
-    });
 
-    poly.on('mousedown', function(e) {
-        isDragging = true;
-        startLatLng = e.latlng;
-        mymap.dragging.disable();
-    });
+    // mymap.on('touchcancel', function(e) {
+    //     // if (isDragging) {
+    //     //     isDragging = false;
+    //     //     mymap.dragging.enable();
+    //     // }
+    //     isDragging = false;
+    //     mymap.dragging.enable();
+    // });
+    //
+    // function isSingleTouch(e) {
+    //     return e.originalEvent.touches && e.originalEvent.touches.length === 1;
+    // }
+    //
+    // mymap.on('touchstart', function(e) {
+    //     if (!isSingleTouch(e)) return;
+    //     let latlng = e.latlng;
+    //     if (isPointInRectangle(latlng, poly)) {
+    //         isDragging = true;
+    //         startLatLng = latlng;
+    //         mymap.dragging.disable();
+    //     }
+    // });
+    //
+    // mymap.on('touchmove', function(e) {
+    //     if (!isSingleTouch(e)) return;
+    //     if (isDragging) {
+    //         let latlng = e.latlng;
+    //         let offset = L.latLng(
+    //             latlng.lat - startLatLng.lat,
+    //             latlng.lng - startLatLng.lng
+    //         );
+    //         let b = poly.getBounds();
+    //
+    //         let newBounds = [
+    //             [b.getSouthWest().lat + offset.lat, b.getSouthWest().lng + offset.lng],
+    //             [b.getNorthEast().lat + offset.lat, b.getNorthEast().lng + offset.lng]
+    //         ];
+    //
+    //         poly.setBounds(newBounds);
+    //         startLatLng = latlng;
+    //     }
+    // });
+    //
+    // mymap.on('touchend', function(e) {
+    //     if (isDragging) {
+    //         isDragging = false;
+    //         mymap.dragging.enable();
+    //     }
+    // });
+    //
+    // mymap.on('touchcancel', function(e) {
+    //     if (isDragging) {
+    //         isDragging = false;
+    //         mymap.dragging.enable();
+    //     }
+    // });
 
-    mymap.on('mousemove', function(e) {
-        if (isDragging) {
-            let latlng = e.latlng;
-            let offset = L.latLng(
-                latlng.lat - startLatLng.lat,
-                latlng.lng - startLatLng.lng
-            );
 
-            let b = poly.getBounds();
-            let newBounds = [
-                [b.getSouthWest()["lat"] + offset.lat, b.getSouthWest()["lng"] + offset.lng],
-                [b.getNorthEast()["lat"] + offset.lat, b.getNorthEast()["lng"] + offset.lng]
-            ];
 
-            poly.setBounds(newBounds);
-            startLatLng = latlng;
-        }
-    });
 
-    mymap.on('mouseup', function() {
-        if (isDragging) {
-            isDragging = false;
-            mymap.dragging.enable();
-        }
-    });
-}
+//     poly.on('mousedown', function(e) {
+//         isDragging = true;
+//         startLatLng = e.latlng;
+//         mymap.dragging.disable();
+//     });
+//
+//     mymap.on('mousemove', function(e) {
+//         if (isDragging) {
+//             let latlng = e.latlng;
+//             let offset = L.latLng(
+//                 latlng.lat - startLatLng.lat,
+//                 latlng.lng - startLatLng.lng
+//             );
+//
+//             let b = poly.getBounds();
+//             let newBounds = [
+//                 [b.getSouthWest()["lat"] + offset.lat, b.getSouthWest()["lng"] + offset.lng],
+//                 [b.getNorthEast()["lat"] + offset.lat, b.getNorthEast()["lng"] + offset.lng]
+//             ];
+//
+//             poly.setBounds(newBounds);
+//             startLatLng = latlng;
+//         }
+//     });
+//
+//     mymap.on('mouseup', function() {
+//         if (isDragging) {
+//             isDragging = false;
+//             mymap.dragging.enable();
+//         }
+//     });
+// }

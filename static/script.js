@@ -10,6 +10,7 @@ import 'https://unpkg.com/leaflet-contextmenu@1.4.0/dist/leaflet.contextmenu.js'
 import {centerMap, zoomIn, zoomOut} from './context_menu.js'
 import * as utils from './utils.js'
 import * as init from './init.js'
+// import {drop_drag} from "./utils.js";
 
 (function() {
     L.Map.mergeOptions({
@@ -189,17 +190,118 @@ function teleport_polygon() {
     return poly
 }
 
+
+
+
+L.TrueSizeRectangle = L.Rectangle.extend({
+    initialize: function(latlngs, options) {
+        L.Rectangle.prototype.initialize.call(this, latlngs, options);
+        this._startLatLngs = null;
+        this._startPoint = null;
+        this._map = null;
+
+        // Создаем ссылки на обработчики для правильного удаления событий
+        this._onMouseMoveHandler = this._onMouseMove.bind(this);
+        this._onMouseUpHandler = this._onMouseUp.bind(this);
+
+        this.on('add', this._onAdd, this);
+        this.on('remove', this._onRemove, this);
+    },
+
+    _onAdd: function() {
+        this._map = this._map || this._layer._map;
+        this._path.addEventListener('mousedown', this._onMouseDown.bind(this));
+        this._path.addEventListener('touchstart', this._onMouseDown.bind(this));
+    },
+
+    _onRemove: function() {
+        this._path.removeEventListener('mousedown', this._onMouseDown.bind(this));
+        this._path.removeEventListener('touchstart', this._onMouseDown.bind(this));
+    },
+
+    _onMouseDown: function(e) {
+        e.preventDefault();
+        this._map.dragging.disable();
+        this._startLatLngs = this.getLatLngs();
+        this._startPoint = this._map.mouseEventToLatLng(e.touches ? e.touches[0] : e);
+
+        document.addEventListener('mousemove', this._onMouseMoveHandler);
+        document.addEventListener('mouseup', this._onMouseUpHandler);
+        document.addEventListener('touchmove', this._onMouseMoveHandler);
+        document.addEventListener('touchend', this._onMouseUpHandler);
+    },
+
+    _onMouseMove: function(e) {
+        e.preventDefault();
+        var currentPoint = this._map.mouseEventToLatLng(e.touches ? e.touches[0] : e);
+        var deltaLat = currentPoint.lat - this._startPoint.lat;
+        var deltaLng = currentPoint.lng - this._startPoint.lng;
+
+        // Пересчитываем координаты с учетом изменения широты
+        var startCenter = this._getLatLngsCenter(this._startLatLngs);
+        var currentCenter = L.latLng(startCenter.lat + deltaLat, startCenter.lng + deltaLng);
+
+        var newLatLngs = this._startLatLngs.map(latlngs => {
+            return latlngs.map(latlng => {
+                var latDiff = latlng.lat - startCenter.lat;
+                var lngDiff = latlng.lng - startCenter.lng;
+                var newLat = currentCenter.lat + latDiff;
+                var newLng = currentCenter.lng + lngDiff * (Math.cos(startCenter.lat * Math.PI / 180) / Math.cos(currentCenter.lat * Math.PI / 180));
+                return [newLat, newLng];
+            });
+        });
+
+        this.setLatLngs(newLatLngs);
+    },
+
+    _onMouseUp: function(e) {
+        e.preventDefault();
+        this._map.dragging.enable();
+        document.removeEventListener('mousemove', this._onMouseMoveHandler);
+        document.removeEventListener('mouseup', this._onMouseUpHandler);
+        document.removeEventListener('touchmove', this._onMouseMoveHandler);
+        document.removeEventListener('touchend', this._onMouseUpHandler);
+        this.fire('moveend', { latlngs: this.getLatLngs() });
+    },
+
+    _getLatLngsCenter: function(latlngs) {
+        var latSum = 0, lngSum = 0, count = 0;
+        latlngs.forEach(latlngArr => {
+            latlngArr.forEach(latlng => {
+                latSum += latlng.lat;
+                lngSum += latlng.lng;
+                count++;
+            });
+        });
+        return L.latLng(latSum / count, lngSum / count);
+    }
+});
+
+L.trueSizeRectangle = function(latlngs, options) {
+    return new L.TrueSizeRectangle(latlngs, options);
+};
+
+
+
+
+
+
+
 function create_polygon(center, height, width) {
     remove_polygon(poly);
     let coord = get_coord_poly(center, height, width)
-    poly = new L.Rectangle(coord,
-        {
-            color: '#810541',
-            fillColor: '#D462FF',
-            fillOpacity: 0.5
-        }).addTo(mymap);
+    poly = new L.TrueSizeRectangle(coord, {color: "red"});
+    poly.addTo(mymap);
+    // poly = new L.Rectangle(coord,
+    //     {
+    //         color: '#810541',
+    //         fillColor: '#D462FF',
+    //         fillOpacity: 0.5
+    //     });
+    // mymap.addLayer(poly);
 
-    utils.set_on_events(poly, mymap);
+    // utils.set_on_events(poly, mymap);
+    // utils.drop_drag();
     return poly
 }
 
@@ -233,6 +335,7 @@ function sendPoly() {
                         hash_id: hash_id};
 
     fetch('http://127.0.0.1:8000/send', {
+    // fetch('http://root-hub.ru:41082/send', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
