@@ -7,7 +7,7 @@ import 'https://unpkg.com/leaflet-contextmenu@1.4.0/dist/leaflet.contextmenu.js'
 // import "https://unpkg.com/leaflet-truesize@3.1.0/dist/Leaflet.TrueSize.umd.js";
 // import './leaflet/truesize.js'
 
-import {centerMap, zoomIn, zoomOut} from './context_menu.js'
+// import {centerMap, zoomIn, zoomOut} from './context_menu.js'
 import * as utils from './utils.js'
 import * as init from './init.js'
 // import {drop_drag} from "./utils.js";
@@ -68,6 +68,18 @@ import * as init from './init.js'
     L.Map.addInitHook('addHandler', 'touchExtend', L.Map.TouchExtend);
 
 }).call(this);
+
+export function centerMap (e) {
+    mymap.panTo(e.latlng);
+}
+
+export function zoomIn (e) {
+    mymap.zoomIn();
+}
+
+export function zoomOut (e) {
+    mymap.zoomOut();
+}
 
 var mymap = L.map('mapid', {
     contextmenu: true,
@@ -361,6 +373,7 @@ function sendPoly() {
 }
 
 function check_send_poly_response(data) {
+    console.log(data);
     if (data["status"] === "outdated_page") {
         alert("Оййййй, кажется страничка устарела, cry about it")
     }
